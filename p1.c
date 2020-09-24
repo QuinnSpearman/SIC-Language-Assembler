@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+// Node structure that holds a string of the symbol to be stored in it, the lineNumber, the location counter, a pointer to the next node
 typedef struct node{
 	char *symbol;
 	int lineNumber;
@@ -17,44 +18,47 @@ void checkIfValidSymbol(char* symbol, char *line);
 void exceedsMemoryError(char *line);
 void printNodes();
 
-struct node *hashTable[26];
+// Array of 26 node structs
+node *hashTable[26];
 
-int lineNumber = 0;
-int startingAddress = 0;
-bool endFound = false;
-
+int lineNumber = 0; // stores the line number that the pass is on 
+int startingAddress = 0; // Stores the address that the assembly program started at
+bool endFound = false; // Stores whether the end directive has been found 
 		
 int main(int argc, char *argv[]){
 	
+	// If there are more or less than 2 arguments at runtime, notify the user of the usage of the program
 	if(argc != 2){
 		printf("USAGE: %s <filename>\n", argv[0]);
 		return 1;
 	}
 
-	FILE *inputFile;
+	
+	FILE *inputFile; // File pointer
 
-	inputFile = fopen(argv[1], "r");
+	inputFile = fopen(argv[1], "r"); // Opens the file for reading
 
+	// If the input file is not readable, notify the programmer
 	if(!inputFile){
 		printf("ERROR: COULD NOT OPEN %s FOR READING\n", argv[0]);
 		return 1;
 	}
 
-	int locCtr;
-	int *pLocCtr = &locCtr;
-	int tempInt;
-	char *subStr;
-	char *tempStr;
-	FILE *intermediateFile;
-	char *locCtrStr;
-	char *tempLine;
-	int programLength;
+	int locCtr; // Location counter
+	int *pLocCtr = &locCtr; // Pointer to location counter
+	int tempInt; // Temporary integer used for scanning strings into integer values
+	char *subStr; // Substring
+	char *tempStr; // Temporary string for passing strings into functions
+	FILE *intermediateFile; // Intermediate file pointer
+	char *locCtrStr; // String version of location counter
+	char *tempLine; // Temporary line
+	int programLength; // Stores the length of the program in bytes
 
-	intermediateFile = fopen("intermediate.txt", "w");
+	intermediateFile = fopen("intermediate.txt", "w"); // Opens intermediate file for writing 
 	
-	char line[1024];
+	char line[1024]; // Line string for reading each line of input
 	
-	while(fgets(line, 1024, inputFile)){
+	while(fgets(line, 1024, inputFile)){ // Loops until first non-comment line is found
 		
 		// If last character of the line is a newline character
 		if(line[strlen(line) - 1] == '\n'){
@@ -66,11 +70,12 @@ int main(int argc, char *argv[]){
 				tempLine[i] = line[i];
 			}	
 		}
+		// If last character of line is not a newline
 		else{
 			strcpy(tempLine, line);
 		}
 
-		lineNumber += 1;
+		lineNumber += 1; // Adds one to the line number
 
 		// If the first character of the line is a #, continue to the next line
 		if(line[0] == '#' || line[0] == ' ' || line[0] =='\t'){
@@ -78,18 +83,18 @@ int main(int argc, char *argv[]){
 		}// If the first character is between A and Z
 		else if(('A' <= line[0]) && (line[0] <= 'Z')){
 
-			firstLine(line, pLocCtr);
+			firstLine(line, pLocCtr); // Calls first line function
 
-			fprintf(intermediateFile, "%s\n", tempLine);
-			fprintf(intermediateFile, "%x\n", locCtr);
+			fprintf(intermediateFile, "%s\n", tempLine); // Copies the temporary line to the intermediate file 
+			fprintf(intermediateFile, "%x\n", locCtr); // Copies the hex representation of the location counter to the intermediate file
 			
 			break;		
 		}
 		else{
-			printf("%s\n");
-			printf("[%d] ERROR: INVALD SYMBOL, STARTING CHARACTER MUST BE CAPITAL\n", lineNumber);
-			remove("intermedite.txt");
-			exit(0);
+			printf("%s\n", tempLine); // Prints the current line
+			printf("[%d] ERROR: INVALID SYMBOL, STARTING CHARACTER MUST BE CAPITAL\n", lineNumber); // Prints error
+			remove("intermedite.txt"); // Removes the intermediate file
+			exit(0); 
 		}
 	}
 
