@@ -120,34 +120,33 @@ int main(int argc, char *argv[]){
 			strcpy(tempLine, line);
 		}
 
-		lineNumber += 1;
+		lineNumber += 1; // Add to the line number counter
 
-		char *token = strtok(line, " \t");
-			
-		// If line is a comment line, continue to next line		
-		if(line[0] == '#'){
+		char *token = strtok(line, " \t"); // get the first token of the line
+				
+		if(line[0] == '#'){// If line is a comment line, continue to next line	
 			continue;
 		}
-		// If line is a symbol line, print the symbol and location counter
-		else if(('A' <= line[0]) && (line[0] <= 'Z')){
-			char *symbol = malloc(strlen(token));
+		else if(('A' <= line[0]) && (line[0] <= 'Z')){// If line is a symbol line, print the symbol and location counter
+			char *symbol = malloc(strlen(token));// Allocates space to store a symbol
 
-			strcpy(symbol, token);
+			strcpy(symbol, token); // If line is a symbol line, print the symbol and location counter
 
-			checkIfValidSymbol(symbol, line);		                        
+			checkIfValidSymbol(symbol, line); // Calls the function that checks if the symbol is valid		                        
 													                                         
-			insert(symbol, locCtr, tempLine, lineNumber);
-			printf("%s\t%x\n", token, locCtr);
-			token = strtok(NULL, " \t");
+			insert(symbol, locCtr, tempLine, lineNumber); // Calls the function that inserts the symbol into the symbol table
+			printf("%s\t%x\n", token, locCtr); // Prints the symbol and its location counter
+			token = strtok(NULL, " \t"); // Gets the next token
 		}
-		else if(line[0] != ' ' && line[0] != '\t'){
+		else if(line[0] != ' ' && line[0] != '\t'){ // Checks if the first character of the line is not a space and not a tab
+			// If the condition is met, print the line it occurs on and the error, and delete the intermediate file and exit the program
 			printf("%s\n", tempLine);
-			printf("[%d] ERROR: INVALID SYMBOL, STARTS WITH INVALID CHARACTER\n", lineNumber);
+			printf("[%d] ERROR: INVALID SYMBOL, STARTS WITH INVALID CHARACTER\n", lineNumber); 
 			remove("intermediate.txt");
 			exit(0);
 		}
-
-		if(strcmp(token, "END") == 0){
+		if(strcmp(token, "END") == 0){ // If the directive equals "END"
+			// Add 3 to location counter, add line and location counter to intermediate file, set endfound boolean to true
 			locCtr += 3;
 			fprintf(intermediateFile, "%s\n", tempLine);
 		    fprintf(intermediateFile, "%x\n", locCtr);
@@ -155,35 +154,41 @@ int main(int argc, char *argv[]){
 			
 			break;
 		}
-		else if(strcmp(token, "START") == 0){
+
+		else if(strcmp(token, "START") == 0){ // If the directive equals "END"
+			// Print line and error message, delete intermediate file and exit the program
 			printf("%s\n", tempLine);
 			printf("[%d] INVALID OPCODE OR DIRECTIVE, START MUST BE ON FIRST LINE\n", lineNumber);
 			remove("intermediate.txt");
 			exit(0);
 		}
-		else if(strcmp(token, "RESW") == 0){
+		else if(strcmp(token, "RESW") == 0){ // If the token equals "RESW"
+			// Get the next token, get the integer value of the token, and add 3 times the value of the token to the location counter
 			token = strtok(NULL, " \t");
 			sscanf(token, "%d", &tempInt);
 			locCtr += (3 * tempInt);
 
 		}
-		else if(strcmp(token, "RESB") == 0){
+		else if(strcmp(token, "RESB") == 0){ // If the token equals "RESB"
+			// Get the next token, get the integer value of the token, and the value of the token to the location counter
 			token = strtok(NULL, " \t");
 			sscanf(token, "%d", &tempInt);
 			locCtr += tempInt;
 		}
-		else if(strcmp(token, "WORD") == 0){
-			token = strtok(NULL, " \t");
+		else if(strcmp(token, "WORD") == 0){ // If the token equals "WORD"
+			// Get the next token, get the integer value of the next token 
+			token = strtok(NULL, " \t"); 
 			sscanf(token, "%d", &tempInt);
 
-			if(tempInt > 8388608){
+			if(tempInt > 8388608){ // Check if the value of the token exceeds the possible size for a word
+				// Print the line and the error message, delete the intermediate file, and exit the program
 				printf("%s\n", tempLine);
 				printf("[%d] ERROR: CONSTANT EXCEEDS WORD SIZE\n", lineNumber);
 				remove("intermediate.txt");
 				exit(0);
 			}
 
-			locCtr += 3;
+			locCtr += 3; // Add 3 to the location counter
 		}
 		else if(strcmp(token, "BYTE") == 0){
 			token = strtok(NULL, " \t");
